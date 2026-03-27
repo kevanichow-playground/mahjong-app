@@ -1,0 +1,15 @@
+{
+  "name": "mahjong-leaderboard",
+  "version": "1.0.0",
+  "description": "9388 Mckim Way 麻雀龍虎榜",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "sql.js": "^1.14.1"
+  }
+}
