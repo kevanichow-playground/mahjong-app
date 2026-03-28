@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9388 Mckim Way 麻雀龍虎榜</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--gold:#c9a84c;--gold-light:#e8c97a;--red:#c0392b;--ink:#0d0d0d;--paper:#f5efe0;--paper-dark:#ede4cc;--green:#27ae60;--smoke:#1a1714;--muted:#7a6e5f;--jade:#00857a;--purple:#8e44ad;--blue:#2980b9}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ink);color:var(--paper);font-family:'Space Mono',monospace;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.3}
+
+/* HERO */
+.hero{position:relative;text-align:center;padding:48px 20px 32px;background:linear-gradient(180deg,#1a1208 0%,var(--ink) 100%);border-bottom:2px solid var(--gold);overflow:hidden}
+.hero::before{content:'🀄';position:absolute;font-size:260px;opacity:.04;top:-50px;left:50%;transform:translateX(-50%);pointer-events:none}
+.hero-sub{font-size:10px;letter-spacing:.35em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;opacity:.8}
+.hero-title{font-family:'Noto Serif TC',serif;font-weight:900;font-size:clamp(26px,6vw,66px);color:var(--gold);text-shadow:0 0 40px rgba(201,168,76,.4);letter-spacing:.08em}
+.hero-title span{color:var(--paper)}
+.hero-meta{margin-top:12px;font-size:10px;color:var(--muted);letter-spacing:.2em}
+.hero-kpis{display:flex;justify-content:center;gap:32px;margin-top:24px;flex-wrap:wrap}
+.kpi{text-align:center}
+.kpi-num{font-family:'Bebas Neue',cursive;font-size:38px;color:var(--gold);line-height:1}
+.kpi-label{font-size:9px;color:var(--muted);letter-spacing:.2em;margin-top:3px}
+
+/* TABS */
+.tabs{display:flex;justify-content:center;gap:3px;padding:16px;background:#0a0a0a;border-bottom:1px solid #1a1a1a;flex-wrap:wrap;position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+.tab-btn{background:transparent;border:1px solid #2a2520;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;padding:7px 14px;cursor:pointer;letter-spacing:.08em;transition:all .2s;border-radius:2px}
+.tab-btn:hover{border-color:var(--gold);color:var(--gold)}
+.tab-btn.active{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}
+
+/* SECTIONS */
+.section{display:none;padding:28px 16px;max-width:1200px;margin:0 auto}
+.section.active{display:block}
+.sec-title{font-family:'Noto Serif TC',serif;font-size:20px;color:var(--gold);margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid #1e1c19;display:flex;align-items:center;gap:10px}
+.sec-title::before{content:'';display:inline-block;width:3px;height:20px;background:var(--gold);border-radius:2px}
+
+/* LEADERBOARD */
+.lb{display:flex;flex-direction:column;gap:6px}
+.lb-row{display:grid;grid-template-columns:44px 1fr 90px 85px 80px 70px;align-items:center;gap:10px;padding:12px 18px;background:#161210;border:1px solid #1e1c19;border-radius:3px;cursor:pointer;transition:all .2s;animation:slideIn .35s ease backwards}
+@keyframes slideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+.lb-row:hover{border-color:var(--gold);background:#1d1810}
+.lb-row.top3{border-color:var(--gold);background:linear-gradient(90deg,#1d1508 0%,#161210 100%)}
+.lb-rank{font-family:'Bebas Neue',cursive;font-size:26px;text-align:center;color:var(--muted)}
+.lb-row.r1 .lb-rank{color:#FFD700;font-size:30px}
+.lb-row.r2 .lb-rank{color:#C0C0C0;font-size:28px}
+.lb-row.r3 .lb-rank{color:#CD7F32}
+.lb-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:700}
+.lb-sub{font-size:9px;color:var(--muted);letter-spacing:.1em;margin-top:1px}
+.lb-total{font-family:'Bebas Neue',cursive;font-size:24px;text-align:right}
+.pos{color:var(--green)}.neg{color:var(--red)}.gold{color:var(--gold)}
+.lb-wr{text-align:center;font-size:12px}
+.wr-bar-bg{height:5px;background:#222;border-radius:3px;margin-top:3px}
+.wr-bar{height:100%;border-radius:3px;background:var(--jade);transition:width .8s}
+.lb-plays{font-size:11px;color:var(--muted);text-align:center}
+.lb-day{font-size:9px;color:var(--gold);text-align:right;letter-spacing:.1em}
+
+/* CHARTS */
+.chart-box{background:#161210;border:1px solid #1e1c19;border-radius:5px;padding:18px;margin-bottom:18px}
+.chart-label{font-size:9px;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;margin-bottom:14px}
+.chart-h{height:380px}.chart-m{height:280px}.chart-s{height:220px}
+
+/* DOW GRID */
+.dow-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.dow-card{background:#161210;border:1px solid #1e1c19;border-radius:5px;padding:18px;animation:fadeUp .4s ease backwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.dow-head{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.best-tag{background:var(--gold);color:var(--ink);font-size:8px;padding:2px 7px;font-family:'Space Mono',monospace;letter-spacing:.1em}
+.dow-bars{display:flex;gap:3px;align-items:flex-end}
+.dow-bar-col{flex:1;text-align:center}
+.dow-bar-label{font-size:8px;color:var(--muted);margin-bottom:3px}
+.dow-bar-wrap{height:55px;display:flex;align-items:flex-end;justify-content:center}
+.dow-bar{width:100%;border-radius:2px 2px 0 0;min-height:3px}
+.db-pos{background:var(--jade)}.db-neg{background:var(--red)}.db-best{background:var(--gold)!important}.db-zero{width:100%;height:1px;background:#222}
+.dow-bar-val{font-size:8px;margin-top:3px;font-family:'Space Mono',monospace}
+
+/* PROFILES */
+.ps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:7px;margin-bottom:24px}
+.ps-btn{background:#161210;border:1px solid #1e1c19;color:var(--paper);font-family:'Noto Serif TC',serif;font-size:13px;padding:10px 6px;cursor:pointer;text-align:center;border-radius:3px;transition:all .2s}
+.ps-btn:hover{border-color:var(--gold)}
+.ps-btn.active{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}
+.ps-total{font-family:'Bebas Neue',cursive;font-size:15px;display:block;margin-top:3px}
+.ps-btn.active .ps-total{color:var(--ink)}
+.profile-wrap{animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.p-header{display:flex;gap:20px;margin-bottom:24px;flex-wrap:wrap;align-items:flex-start}
+.p-avatar{width:72px;height:72px;background:linear-gradient(135deg,var(--smoke),#1a1208);border:2px solid var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif TC',serif;font-size:26px;font-weight:900;color:var(--gold);flex-shrink:0}
+.p-info{flex:1;min-width:180px}
+.p-name{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:900;color:var(--gold)}
+.p-rank{display:inline-block;background:var(--gold);color:var(--ink);font-family:'Bebas Neue',cursive;font-size:16px;padding:2px 10px;margin-top:5px}
+.p-kpis{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
+.p-kpi{text-align:center;background:#161210;border:1px solid #1e1c19;padding:9px 14px;border-radius:3px;min-width:72px}
+.p-kpi-num{font-family:'Bebas Neue',cursive;font-size:22px;line-height:1}
+.p-kpi-label{font-size:8px;color:var(--muted);letter-spacing:.15em;margin-top:2px}
+.p-bestday-box{text-align:center;background:#161210;border:1px solid #1e1c19;padding:14px 18px;border-radius:3px}
+.p-charts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:650px){.p-charts{grid-template-columns:1fr}.lb-wr,.lb-plays,.lb-day{display:none}.lb-row{grid-template-columns:38px 1fr 70px}}
+.streak-dots{display:flex;gap:3px;flex-wrap:wrap;margin-top:6px}
+.dot{width:9px;height:9px;border-radius:50%}
+.dot-w{background:var(--jade)}.dot-l{background:var(--red)}.dot-z{background:#333}
+
+/* TREND / PREDICTION */
+.trend-legend{display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap}
+.tl-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+.tl-line{width:20px;height:2px}
+.momentum-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:20px}
+.mom-card{background:#161210;border:1px solid #1e1c19;border-radius:4px;padding:16px;animation:fadeUp .4s ease backwards}
+.mom-name{font-family:'Noto Serif TC',serif;font-size:15px;font-weight:700;margin-bottom:8px}
+.mom-val{font-family:'Bebas Neue',cursive;font-size:28px}
+.mom-bar-bg{height:8px;background:#1a1a1a;border-radius:4px;margin:6px 0}
+.mom-bar{height:100%;border-radius:4px;transition:width 1s}
+
+/* ODDS */
+.odds-setup{background:#161210;border:1px solid var(--gold);border-radius:5px;padding:20px;margin-bottom:24px}
+.odds-setup h3{font-family:'Noto Serif TC',serif;font-size:16px;color:var(--gold);margin-bottom:14px}
+.player-checkboxes{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.px-chk{display:flex;align-items:center;gap:6px;background:#0d0d0d;border:1px solid #2a2520;padding:6px 12px;border-radius:3px;cursor:pointer;transition:all .2s;font-size:12px;font-family:'Noto Serif TC',serif;user-select:none}
+.px-chk.checked{background:#1d1508;border-color:var(--gold);color:var(--gold)}
+.px-chk input{display:none}
+.day-select{background:#0d0d0d;border:1px solid #2a2520;color:var(--paper);font-family:'Space Mono',monospace;font-size:12px;padding:7px 12px;border-radius:3px;margin-right:10px}
+.btn-primary{background:var(--gold);color:var(--ink);border:none;font-family:'Space Mono',monospace;font-size:12px;font-weight:700;padding:9px 20px;cursor:pointer;border-radius:2px;letter-spacing:.1em;transition:all .2s}
+.btn-primary:hover{background:var(--gold-light)}
+.btn-secondary{background:transparent;color:var(--gold);border:1px solid var(--gold);font-family:'Space Mono',monospace;font-size:11px;padding:7px 16px;cursor:pointer;border-radius:2px;transition:all .2s}
+.btn-secondary:hover{background:var(--gold);color:var(--ink)}
+.odds-results{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.odds-row{display:grid;grid-template-columns:30px 1fr 70px 70px 200px;align-items:center;gap:12px;padding:14px 18px;background:#161210;border:1px solid #1e1c19;border-radius:4px;animation:slideIn .3s ease backwards}
+.odds-row.fav{border-color:var(--gold);background:linear-gradient(90deg,#1d1508,#161210)}
+.odds-pos{font-family:'Bebas Neue',cursive;font-size:22px;text-align:center}
+.odds-name{font-family:'Noto Serif TC',serif;font-size:16px;font-weight:700}
+.odds-decimal{font-family:'Bebas Neue',cursive;font-size:26px;color:var(--gold)}
+.odds-prob{font-size:12px;color:var(--muted)}
+.odds-bars{display:flex;flex-direction:column;gap:3px}
+.odds-bar-row{display:flex;align-items:center;gap:6px;font-size:9px;color:var(--muted)}
+.odds-bar-bg{flex:1;height:4px;background:#1a1a1a;border-radius:2px}
+.odds-bar-fill{height:100%;border-radius:2px;transition:width .8s}
+
+/* INPUT SCORES */
+.input-form{background:#161210;border:1px solid #1e1c19;border-radius:5px;padding:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:500px){.form-row{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:10px;color:var(--muted);letter-spacing:.2em}
+.form-input{background:#0d0d0d;border:1px solid #2a2520;color:var(--paper);font-family:'Space Mono',monospace;font-size:13px;padding:9px 12px;border-radius:3px;outline:none;transition:border .2s;width:100%}
+.form-input:focus{border-color:var(--gold)}
+.score-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px}
+.score-item{display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid #1e1c19;padding:10px 14px;border-radius:3px}
+.score-player{font-family:'Noto Serif TC',serif;font-size:14px;flex:1}
+.score-input{background:transparent;border:none;border-bottom:1px solid #2a2520;color:var(--paper);font-family:'Space Mono',monospace;font-size:14px;width:80px;text-align:right;outline:none;padding:2px}
+.score-input:focus{border-bottom-color:var(--gold)}
+.sum-display{font-size:12px;text-align:right;margin-bottom:16px;color:var(--muted)}
+.sum-display span{font-family:'Bebas Neue',cursive;font-size:18px}
+.sessions-history{display:flex;flex-direction:column;gap:6px;margin-top:24px}
+.sess-item{display:flex;justify-content:space-between;align-items:center;background:#0d0d0d;border:1px solid #1e1c19;padding:10px 16px;border-radius:3px;font-size:12px}
+.sess-date{color:var(--gold);font-family:'Bebas Neue',cursive;font-size:16px}
+.sess-players{color:var(--muted);font-size:10px;margin-top:2px}
+.del-btn{background:transparent;border:1px solid #333;color:#555;font-size:10px;padding:4px 10px;cursor:pointer;border-radius:2px;transition:all .2s}
+.del-btn:hover{border-color:var(--red);color:var(--red)}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--gold);color:var(--ink);padding:12px 20px;border-radius:3px;font-size:12px;font-weight:700;z-index:9998;animation:toastIn .3s ease;display:none}
+@keyframes toastIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.loading{text-align:center;padding:60px;color:var(--muted);font-size:14px}
+.error-msg{color:var(--red);font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-sub">9388 Mckim Way · 為名譽之戰</div>
+  <h1 class="hero-title">麻雀<span>龍虎榜</span></h1>
+  <div class="hero-meta" id="hero-meta">載入中...</div>
+  <div class="hero-kpis">
+    <div class="kpi"><div class="kpi-num" id="kpi-sessions">-</div><div class="kpi-label">總場次</div></div>
+    <div class="kpi"><div class="kpi-num" id="kpi-players">-</div><div class="kpi-label">參賽人數</div></div>
+    <div class="kpi"><div class="kpi-num" id="kpi-leader" style="font-size:24px">-</div><div class="kpi-label">總榜首</div></div>
+    <div class="kpi"><div class="kpi-num" id="kpi-best-wr" style="color:#00857a">-</div><div class="kpi-label">最高勝率</div></div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('lb')">🏆 龍虎榜</button>
+  <button class="tab-btn" onclick="showTab('wr')">📊 勝率圖</button>
+  <button class="tab-btn" onclick="showTab('dow')">📅 星期運勢</button>
+  <button class="tab-btn" onclick="showTab('profile')">👤 個人檔案</button>
+  <button class="tab-btn" onclick="showTab('trend')">📈 走勢預測</button>
+  <button class="tab-btn" onclick="showTab('odds')">🎲 賠率投注</button>
+  <button class="tab-btn" onclick="showTab('input')">✏️ 輸入分數</button>
+</div>
+
+<div id="tab-lb" class="section active"><div class="loading">載入中...</div></div>
+<div id="tab-wr" class="section"><div class="loading">載入中...</div></div>
+<div id="tab-dow" class="section"><div class="loading">載入中...</div></div>
+<div id="tab-profile" class="section"><div class="loading">載入中...</div></div>
+<div id="tab-trend" class="section"><div class="loading">載入中...</div></div>
+<div id="tab-odds" class="section"><div class="loading">載入中...</div></div>
+<div id="tab-input" class="section"><div class="loading">載入中...</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DOW = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DOW_ZH = ['一','二','三','四','五','六','日'];
+const TREND_COLORS = ['#c9a84c','#00857a','#c0392b','#8e44ad','#e67e22','#2980b9','#e74c3c','#1abc9c'];
+
+let APP = { sessions: [], players: [] };
+let activeTab = 'lb';
+let activePlayer = null;
+const charts = {};
+
+// ── DATA LOAD ──
+async function loadData() {
+  try {
+    const res = await fetch('/api/data');
+    const data = await res.json();
+    APP.sessions = data.sessions;
+    APP.players = data.players;
+    renderAll();
+  } catch (e) {
+    document.querySelectorAll('.loading').forEach(el => el.textContent = '連線失敗，請重新整理');
+    console.error(e);
+  }
+}
+
+function renderAll() {
+  updateHero();
+  renderLeaderboard();
+  renderWinrate();
+  renderDow();
+  renderProfileSelector();
+  renderTrend();
+  renderOddsSetup();
+  renderInput();
+}
+
+// ── HERO ──
+function updateHero() {
+  const { sessions, players } = APP;
+  const mainPlayers = players.filter(p => p.plays >= 3);
+  const leader = players[0];
+  const bestWR = [...mainPlayers].sort((a, b) => b.winrate - a.winrate)[0];
+  const firstDate = sessions[0]?.date || '';
+  const lastDate = sessions[sessions.length - 1]?.date || '';
+  document.getElementById('hero-meta').textContent = `${firstDate} — ${lastDate}`;
+  document.getElementById('kpi-sessions').textContent = sessions.length;
+  document.getElementById('kpi-players').textContent = players.length;
+  document.getElementById('kpi-leader').textContent = leader?.name || '-';
+  document.getElementById('kpi-best-wr').textContent = bestWR ? `${bestWR.name} ${bestWR.winrate}%` : '-';
+}
+
+// ── TAB ──
+function showTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.currentTarget.classList.add('active');
+  activeTab = tab;
+}
+
+// ── LEADERBOARD ──
+function renderLeaderboard() {
+  const el = document.getElementById('tab-lb');
+  const { players } = APP;
+  const medals = ['🥇','🥈','🥉'];
+  el.innerHTML = `<div class="sec-title">總排行榜</div><div class="lb" id="lb-list"></div>`;
+  const list = document.getElementById('lb-list');
+  players.forEach((p, i) => {
+    const sign = p.total >= 0 ? '+' : '';
+    const tc = p.total >= 0 ? 'pos' : 'neg';
+    const rc = i < 3 ? `top3 r${i+1}` : '';
+    const rankLabel = i < 3 ? medals[i] : p.rank;
+    const dow = DOW_ZH[DOW.indexOf(p.bestDay)] || '-';
+    const div = document.createElement('div');
+    div.className = `lb-row ${rc}`;
+    div.style.animationDelay = `${i * 0.035}s`;
+    div.onclick = () => { showTabByName('profile'); selectPlayer(p.name); };
+    div.innerHTML = `
+      <div class="lb-rank">${rankLabel}</div>
+      <div><div class="lb-name">${p.name}</div><div class="lb-sub">${p.plays}場 · 場均${p.avgPerPlay > 0 ? '+' : ''}${p.avgPerPlay}</div></div>
+      <div class="lb-total ${tc}">${sign}${p.total}</div>
+      <div class="lb-wr"><div>${p.winrate}%</div><div class="wr-bar-bg"><div class="wr-bar" style="width:${p.winrate}%"></div></div></div>
+      <div class="lb-plays">${p.wins}勝 ${p.losses}負</div>
+      <div class="lb-day">🍀 週${dow}</div>`;
+    list.appendChild(div);
+  });
+}
+
+function showTabByName(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => { if (b.textContent.includes('個人')) b.classList.add('active'); });
+}
+
+// ── WIN RATE CHART ──
+function renderWinrate() {
+  const el = document.getElementById('tab-wr');
+  el.innerHTML = `
+    <div class="sec-title">勝率 & 場次</div>
+    <div class="chart-box"><div class="chart-label">各玩家勝負場數 (≥3場)</div><div class="chart-h"><canvas id="wr-chart"></canvas></div></div>
+    <div class="sec-title">累積財富走勢 (主要玩家)</div>
+    <div class="chart-box"><div class="chart-label">主要玩家累積點數 (≥5場)</div><div class="chart-h"><canvas id="trend-main-chart"></canvas></div></div>`;
+
+  setTimeout(() => {
+    buildWrChart();
+    buildTrendMainChart();
+  }, 50);
+}
+
+function buildWrChart() {
+  if (charts.wr) charts.wr.destroy();
+  const main = APP.players.filter(p => p.plays >= 3);
+  const ctx = document.getElementById('wr-chart')?.getContext('2d');
+  if (!ctx) return;
+  charts.wr = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: main.map(p => p.name),
+      datasets: [
+        { label: '勝場', data: main.map(p => p.wins), backgroundColor: 'rgba(0,133,122,0.85)', borderRadius: 2 },
+        { label: '負場', data: main.map(p => -p.losses), backgroundColor: 'rgba(192,57,43,0.75)', borderRadius: 2 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#7a6e5f', font: { family: 'Space Mono', size: 10 } } } },
+      scales: {
+        x: { stacked: true, ticks: { color: '#c9a84c', font: { family: 'Noto Serif TC', size: 12 } }, grid: { color: '#1a1a1a' } },
+        y: { stacked: true, ticks: { color: '#7a6e5f', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
+      }
+    }
+  });
+}
+
+function buildTrendMainChart() {
+  if (charts.trendMain) charts.trendMain.destroy();
+  const ctx = document.getElementById('trend-main-chart')?.getContext('2d');
+  if (!ctx) return;
+
+  // Get all unique dates sorted
+  const allDates = [...new Set(APP.sessions.map(s => s.date))].sort();
+  const mainPlayers = APP.players.filter(p => p.plays >= 5).slice(0, 6);
+
+  const datasets = mainPlayers.map((p, i) => {
+    // Build cumulative by date
+    const cumByDate = {};
+    let cum = 0;
+    // sort player trend by date
+    const sorted = [...p.trend].sort((a,b) => a.date.localeCompare(b.date));
+    sorted.forEach(t => { cumByDate[t.date] = t.cumulative; });
+
+    // Fill forward for missing dates
+    const data = [];
+    let lastVal = null;
+    allDates.forEach(d => {
+      if (cumByDate[d] !== undefined) lastVal = cumByDate[d];
+      data.push(lastVal);
+    });
+
+    return {
+      label: p.name,
+      data,
+      borderColor: TREND_COLORS[i],
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.3,
+      spanGaps: true
+    };
+  });
+
+  charts.trendMain = new Chart(ctx, {
+    type: 'line',
+    data: { labels: allDates.map(d => d.slice(5)), datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#7a6e5f', font: { size: 10 } } } },
+      scales: {
+        x: { ticks: { color: '#555', font: { size: 9 }, maxTicksLimit: 14 }, grid: { color: '#111' } },
+        y: { ticks: { color: '#7a6e5f', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
+      }
+    }
+  });
+}
+
+// ── DAY OF WEEK ──
+function renderDow() {
+  const el = document.getElementById('tab-dow');
+  const main = APP.players.filter(p => p.plays >= 3);
+  el.innerHTML = `<div class="sec-title">星期幾打牌最穩？</div><p style="font-size:11px;color:var(--muted);margin-bottom:20px;line-height:1.8">金色 = 個人最佳日。空格 = 無記錄。</p><div class="dow-grid" id="dow-grid"></div>`;
+  const grid = document.getElementById('dow-grid');
+  main.forEach((p, i) => {
+    const avgs = DOW.map(d => p.dowStats[d]?.avg || 0);
+    const maxAbs = Math.max(...avgs.map(Math.abs), 1);
+    const card = document.createElement('div');
+    card.className = 'dow-card'; card.style.animationDelay = `${i * 0.05}s`;
+    const dowZh = DOW_ZH[DOW.indexOf(p.bestDay)] || '-';
+    card.innerHTML = `<div class="dow-head"><span>${p.name}</span><span class="best-tag">🍀 週${dowZh}</span></div>
+    <div class="dow-bars">${DOW.map((d, di) => {
+      const ds = p.dowStats[d] || { avg: 0, sessions: 0 };
+      const isBest = d === p.bestDay && ds.sessions > 0;
+      const h = ds.sessions > 0 ? Math.max((Math.abs(ds.avg) / maxAbs) * 50, 3) : 0;
+      const cls = isBest ? 'db-best' : (ds.avg >= 0 ? 'db-pos' : 'db-neg');
+      const vc = ds.avg >= 0 ? 'pos' : 'neg';
+      return `<div class="dow-bar-col">
+        <div class="dow-bar-label">週${DOW_ZH[di]}</div>
+        <div class="dow-bar-wrap">${ds.sessions > 0 ? `<div class="dow-bar ${cls}" style="height:${h}px"></div>` : '<div class="db-zero"></div>'}</div>
+        <div class="dow-bar-val ${ds.avg >= 0 ? 'pos' : 'neg'}">${ds.sessions > 0 ? (ds.avg > 0 ? '+' : '') + ds.avg : '-'}</div>
+      </div>`;
+    }).join('')}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── PROFILES ──
+function renderProfileSelector() {
+  const el = document.getElementById('tab-profile');
+  el.innerHTML = `<div class="sec-title">個人檔案</div><div class="ps-grid" id="ps-grid"></div><div id="profile-content"></div>`;
+  const grid = document.getElementById('ps-grid');
+  // Use unique players only (deduplicated by name)
+  const seen = new Set();
+  APP.players.forEach(p => {
+    if (seen.has(p.name)) return;
+    seen.add(p.name);
+    const sign = p.total >= 0 ? '+' : '';
+    const tc = p.total >= 0 ? 'pos' : 'neg';
+    const btn = document.createElement('button');
+    btn.className = 'ps-btn'; btn.id = 'ps-' + safeName(p.name);
+    btn.onclick = () => selectPlayer(p.name);
+    btn.innerHTML = `${p.name}<span class="ps-total ${tc}">${sign}${p.total}</span>`;
+    grid.appendChild(btn);
+  });
+  if (APP.players.length > 0) selectPlayer(APP.players[0].name);
+}
+
+function safeName(n) { return n.replace(/[\s']/g, '_'); }
+
+function selectPlayer(name) {
+  activePlayer = name;
+  document.querySelectorAll('.ps-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('ps-' + safeName(name))?.classList.add('active');
+
+  const p = APP.players.find(x => x.name === name);
+  if (!p) return;
+
+  // Destroy old charts
+  ['radar','miniTrend'].forEach(k => { if (charts[k]) { charts[k].destroy(); delete charts[k]; } });
+
+  const sign = p.total >= 0 ? '+' : '';
+  const tc = p.total >= 0 ? 'pos' : 'neg';
+  const sortedTrend = [...p.trend].sort((a,b) => a.date.localeCompare(b.date));
+  const dots = sortedTrend.slice(-15).map(t => `<div class="dot ${t.amount > 0 ? 'dot-w' : t.amount < 0 ? 'dot-l' : 'dot-z'}" title="${t.date}: ${t.amount}"></div>`).join('');
+  const dowZh = DOW_ZH[DOW.indexOf(p.bestDay)] || '-';
+  const momStr = p.momentum > 0.5 ? '🔥上升趨勢' : p.momentum < -0.5 ? '❄️下滑趨勢' : '〰️相對平穩';
+
+  document.getElementById('profile-content').innerHTML = `
+    <div class="profile-wrap">
+      <div class="p-header">
+        <div class="p-avatar">${p.name[0]}</div>
+        <div class="p-info">
+          <div class="p-name">${p.name}</div>
+          <div class="p-rank">RANK #${p.rank}</div>
+          <div class="p-kpis">
+            <div class="p-kpi"><div class="p-kpi-num ${tc}">${sign}${p.total}</div><div class="p-kpi-label">總分</div></div>
+            <div class="p-kpi"><div class="p-kpi-num gold">${p.winrate}%</div><div class="p-kpi-label">勝率</div></div>
+            <div class="p-kpi"><div class="p-kpi-num">${p.plays}</div><div class="p-kpi-label">場次</div></div>
+            <div class="p-kpi"><div class="p-kpi-num ${p.avgPerPlay >= 0 ? 'pos' : 'neg'}">${p.avgPerPlay >= 0 ? '+' : ''}${p.avgPerPlay}</div><div class="p-kpi-label">場均</div></div>
+            <div class="p-kpi"><div class="p-kpi-num pos">+${p.topwin}</div><div class="p-kpi-label">最佳場</div></div>
+            <div class="p-kpi"><div class="p-kpi-num neg">${p.toploss}</div><div class="p-kpi-label">最差場</div></div>
+            <div class="p-kpi"><div class="p-kpi-num" style="color:var(--purple)">${p.stdDev}</div><div class="p-kpi-label">波動性</div></div>
+          </div>
+          <div style="margin-top:12px;font-size:9px;color:var(--muted);letter-spacing:.15em">近${Math.min(15,sortedTrend.length)}場記錄</div>
+          <div class="streak-dots">${dots}</div>
+          <div style="margin-top:8px;font-size:11px;color:var(--gold)">${momStr}</div>
+        </div>
+        <div class="p-bestday-box">
+          <div style="font-size:9px;color:var(--muted);letter-spacing:.2em;margin-bottom:4px">最佳出戰日</div>
+          <div style="font-family:'Bebas Neue',cursive;font-size:52px;color:var(--gold);line-height:1">週${dowZh}</div>
+          <div style="font-size:9px;color:#555;margin-top:2px">${p.bestDay}</div>
+        </div>
+      </div>
+      <div class="p-charts">
+        <div class="chart-box"><div class="chart-label">⬡ 能力六角形分析</div><div class="chart-m"><canvas id="radar-chart"></canvas></div></div>
+        <div class="chart-box">
+          <div class="chart-label">📈 個人財富走勢</div>
+          <div class="chart-s"><canvas id="mini-trend-chart"></canvas></div>
+          <div style="margin-top:14px">
+            <div class="chart-label">📅 星期勝率分佈</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">${DOW.map((d,i) => {
+              const ds = p.dowStats[d] || {winrate:0,sessions:0};
+              const isBest = d === p.bestDay && ds.sessions > 0;
+              const bg = isBest ? 'var(--gold)' : (ds.sessions > 0 ? (ds.winrate >= 50 ? '#00857a' : '#c0392b') : '#1a1a1a');
+              const tc2 = isBest ? 'var(--ink)' : '#ccc';
+              return `<div style="flex:1;text-align:center;background:${bg};padding:6px 2px;border-radius:3px;min-width:30px">
+                <div style="font-size:8px;color:${tc2};letter-spacing:.08em">週${DOW_ZH[i]}</div>
+                <div style="font-family:'Bebas Neue',cursive;font-size:15px;color:${tc2}">${ds.sessions > 0 ? ds.winrate + '%' : '-'}</div>
+                <div style="font-size:7px;color:${tc2};opacity:.7">${ds.sessions}場</div>
+              </div>`;
+            }).join('')}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  setTimeout(() => {
+    buildRadarChart(p);
+    buildMiniTrendChart(p);
+  }, 50);
+}
+
+function computeRadar(p) {
+  const all = APP.players;
+  const totals = all.map(x => x.total);
+  const mn = Math.min(...totals), mx = Math.max(...totals), rng = mx - mn || 1;
+  const avgs = all.map(x => x.avgPerPlay);
+  const mna = Math.min(...avgs), mxa = Math.max(...avgs), rnga = mxa - mna || 1;
+
+  return [
+    Math.round(((p.total - mn) / rng) * 100),
+    Math.round(p.winrate),
+    Math.round(Math.max(0, 100 - (Math.abs(p.toploss) / (Math.max(Math.abs(p.topwin), Math.abs(p.toploss)) || 1)) * 100)),
+    Math.round((p.plays / Math.max(...all.map(x => x.plays))) * 100),
+    Math.round(((p.avgPerPlay - mna) / rnga) * 100),
+    Math.round((p.wins / Math.max(p.plays, 1)) * 100)
+  ].map(v => Math.max(0, Math.min(100, v)));
+}
+
+function buildRadarChart(p) {
+  const ctx = document.getElementById('radar-chart')?.getContext('2d');
+  if (!ctx) return;
+  charts.radar = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['總收益','勝率','穩定性','出場數','場均','韌性'],
+      datasets: [{
+        data: computeRadar(p),
+        backgroundColor: 'rgba(201,168,76,.15)',
+        borderColor: '#c9a84c', borderWidth: 2,
+        pointBackgroundColor: '#c9a84c', pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { r: {
+        min: 0, max: 100,
+        ticks: { display: false },
+        grid: { color: '#2a2520' },
+        angleLines: { color: '#2a2520' },
+        pointLabels: { color: '#c9a84c', font: { family: 'Noto Serif TC', size: 12 } }
+      }}
+    }
+  });
+}
+
+function buildMiniTrendChart(p) {
+  const ctx = document.getElementById('mini-trend-chart')?.getContext('2d');
+  if (!ctx || !p.trend.length) return;
+  const sorted = [...p.trend].sort((a,b) => a.date.localeCompare(b.date));
+  const color = p.total >= 0 ? '#00857a' : '#c0392b';
+  charts.miniTrend = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: sorted.map(d => d.date.slice(5)),
+      datasets: [{
+        data: sorted.map(d => d.cumulative),
+        borderColor: color, backgroundColor: color + '18',
+        borderWidth: 2, fill: true, pointRadius: 2, tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#555', font: { size: 8 }, maxTicksLimit: 8 }, grid: { color: '#111' } },
+        y: { ticks: { color: '#7a6e5f', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
+      }
+    }
+  });
+}
+
+// ── TREND / PREDICTION ──
+function renderTrend() {
+  const el = document.getElementById('tab-trend');
+  el.innerHTML = `
+    <div class="sec-title">走勢預測分析</div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:16px;line-height:1.8">
+      類似股市：3場均線（短線）、5場均線（中線）。<br>斜率 > 0 = 上升趨勢，斜率 < 0 = 下滑趨勢。
+    </p>
+    <div class="chart-box">
+      <div class="chart-label">個人走勢 + 移動平均線</div>
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <select id="trend-player-select" style="background:#0d0d0d;border:1px solid #2a2520;color:var(--paper);font-family:'Space Mono',monospace;font-size:11px;padding:6px 12px;border-radius:3px" onchange="buildPlayerMaChart()">
+          ${APP.players.filter(p => p.plays >= 5).map(p => `<option value="${p.name}">${p.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="trend-legend">
+        <div class="tl-item"><div class="tl-line" style="background:#c9a84c"></div>每場實績</div>
+        <div class="tl-item"><div class="tl-line" style="background:#00857a"></div>3場均線</div>
+        <div class="tl-item"><div class="tl-line" style="background:#8e44ad;border-top:2px dashed #8e44ad"></div>5場均線</div>
+      </div>
+      <div class="chart-m"><canvas id="ma-chart"></canvas></div>
+    </div>
+    <div class="sec-title" style="margin-top:24px">動量排行榜</div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:16px">基於近5場趨勢斜率計算（正 = 上升動量，負 = 下跌動量）</p>
+    <div class="momentum-grid" id="momentum-grid"></div>`;
+
+  setTimeout(() => {
+    buildPlayerMaChart();
+    buildMomentumGrid();
+  }, 50);
+}
+
+function buildPlayerMaChart() {
+  if (charts.ma) charts.ma.destroy();
+  const name = document.getElementById('trend-player-select')?.value || APP.players.find(p => p.plays >= 5)?.name;
+  const p = APP.players.find(x => x.name === name);
+  if (!p) return;
+  const ctx = document.getElementById('ma-chart')?.getContext('2d');
+  if (!ctx) return;
+
+  const sorted = [...p.trend].sort((a,b) => a.date.localeCompare(b.date));
+  const labels = sorted.map(d => d.date.slice(5));
+  const amounts = sorted.map(d => d.amount);
+  const ma3 = sorted.map((_, i) => i < 2 ? null : Math.round((amounts[i] + amounts[i-1] + amounts[i-2]) / 3 * 10) / 10);
+  const ma5 = sorted.map((_, i) => i < 4 ? null : Math.round((amounts.slice(i-4, i+1).reduce((a,b)=>a+b,0) / 5) * 10) / 10);
+
+  // Predict next 2 sessions from linear regression of last 5
+  const last5 = amounts.slice(-5);
+  const n = last5.length;
+  const xs = Array.from({length: n}, (_, i) => i);
+  const sumX = xs.reduce((a,b)=>a+b,0), sumY = last5.reduce((a,b)=>a+b,0);
+  const sumXY = xs.reduce((a,i)=>a+i*last5[i],0), sumX2 = xs.reduce((a,x)=>a+x*x,0);
+  const slope = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
+  const intercept = (sumY - slope*sumX) / n;
+  const pred1 = Math.round((slope*n + intercept) * 10) / 10;
+  const pred2 = Math.round((slope*(n+1) + intercept) * 10) / 10;
+
+  const extLabels = [...labels, '預測+1', '預測+2'];
+  const extAmounts = [...amounts, null, null];
+  const extMa3 = [...ma3, null, null];
+  const extMa5 = [...ma5, null, null];
+  const predLine = [...Array(amounts.length - 1).fill(null), amounts[amounts.length-1], pred1, pred2];
+
+  charts.ma = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: extLabels,
+      datasets: [
+        { label: '每場實績', data: extAmounts, borderColor: '#c9a84c', backgroundColor: 'rgba(201,168,76,.07)', fill: true, borderWidth: 2, pointRadius: 3, tension: 0.1 },
+        { label: '3場均線', data: extMa3, borderColor: '#00857a', borderWidth: 2, pointRadius: 0, tension: 0.4, spanGaps: false },
+        { label: '5場均線', data: extMa5, borderColor: '#8e44ad', borderDash: [5,3], borderWidth: 2, pointRadius: 0, tension: 0.4, spanGaps: false },
+        { label: '趨勢預測', data: predLine, borderColor: '#e67e22', borderDash: [8,4], borderWidth: 2, pointRadius: 4, pointBackgroundColor: '#e67e22', tension: 0.1, spanGaps: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#7a6e5f', font: { size: 10 } } },
+        annotation: {}
+      },
+      scales: {
+        x: { ticks: { color: '#555', font: { size: 9 }, maxTicksLimit: 16 }, grid: { color: '#111' } },
+        y: { ticks: { color: '#7a6e5f', font: { size: 10 } }, grid: { color: '#1a1a1a' } }
+      }
+    }
+  });
+}
+
+function buildMomentumGrid() {
+  const grid = document.getElementById('momentum-grid');
+  if (!grid) return;
+  const sorted = APP.players.filter(p => p.plays >= 4).sort((a, b) => b.momentum - a.momentum);
+  const maxMom = Math.max(...sorted.map(p => Math.abs(p.momentum)), 0.1);
+  sorted.forEach((p, i) => {
+    const isUp = p.momentum > 0;
+    const pct = Math.round((Math.abs(p.momentum) / maxMom) * 100);
+    const color = isUp ? 'var(--jade)' : 'var(--red)';
+    const icon = isUp ? '🚀' : '📉';
+    const recentStr = p.recentForm.map(x => `<span class="${x > 0 ? 'pos' : x < 0 ? 'neg' : ''}">${x > 0 ? '+' : ''}${x}</span>`).join(' ');
+    const card = document.createElement('div');
+    card.className = 'mom-card'; card.style.animationDelay = `${i * 0.05}s`;
+    card.innerHTML = `
+      <div class="mom-name">${icon} ${p.name}</div>
+      <div class="mom-val" style="color:${color}">${p.momentum > 0 ? '+' : ''}${p.momentum}</div>
+      <div class="mom-bar-bg"><div class="mom-bar" style="width:${pct}%;background:${color}"></div></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">近${p.recentForm.length}場：${recentStr}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">場均 ${p.avgPerPlay >= 0 ? '+' : ''}${p.avgPerPlay} · 波動性 ${p.stdDev}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── ODDS ──
+function renderOddsSetup() {
+  const el = document.getElementById('tab-odds');
+  const allNames = [...new Set(APP.players.filter(p => p.plays >= 2).map(p => p.name))];
+  el.innerHTML = `
+    <div class="sec-title">賠率投注</div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:20px;line-height:1.8">根據歷史勝率、近5場表現、當日星期加權計算賠率。選擇今日參賽選手。</p>
+    <div class="odds-setup">
+      <h3>選擇今日參賽者</h3>
+      <div class="player-checkboxes" id="odds-players">
+        ${allNames.map(n => `<label class="px-chk" id="chk-${safeName(n)}"><input type="checkbox" value="${n}" onchange="toggleChk(this)">${n}</label>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <select class="day-select" id="odds-day">
+          ${DOW.map((d,i) => `<option value="${d}" ${d === new Date().toLocaleDateString('en-US',{weekday:'long'}) ? 'selected' : ''}>週${DOW_ZH[i]} (${d})</option>`).join('')}
+        </select>
+        <button class="btn-primary" onclick="calcOdds()">計算賠率</button>
+        <button class="btn-secondary" onclick="quickSelect4()">快選4人</button>
+      </div>
+    </div>
+    <div id="odds-results"></div>`;
+}
+
+function toggleChk(input) {
+  const lbl = input.closest('.px-chk');
+  if (input.checked) lbl.classList.add('checked');
+  else lbl.classList.remove('checked');
+}
+
+function quickSelect4() {
+  document.querySelectorAll('#odds-players input').forEach(i => { i.checked = false; i.closest('.px-chk').classList.remove('checked'); });
+  const top4 = APP.players.filter(p => p.plays >= 2).slice(0, 4).map(p => p.name);
+  top4.forEach(n => {
+    const el = document.querySelector(`#odds-players input[value="${n}"]`);
+    if (el) { el.checked = true; el.closest('.px-chk').classList.add('checked'); }
+  });
+}
+
+async function calcOdds() {
+  const selected = [...document.querySelectorAll('#odds-players input:checked')].map(i => i.value);
+  if (selected.length < 2) { showToast('請至少選擇2位參賽者！'); return; }
+  const day = document.getElementById('odds-day').value;
+  const res = await fetch(`/api/odds?players=${encodeURIComponent(selected.join(','))}&day=${day}`);
+  const data = await res.json();
+  renderOddsResults(data.odds, day);
+}
+
+function renderOddsResults(odds, day) {
+  const container = document.getElementById('odds-results');
+  const dayZh = '週' + DOW_ZH[DOW.indexOf(day)];
+  container.innerHTML = `<div class="sec-title" style="margin-top:24px">${dayZh} 賠率預測</div>
+    <div class="odds-results">
+      ${odds.map((o, i) => {
+        const isFav = i === 0;
+        const rankLabel = i === 0 ? '🏆 大熱門' : i === 1 ? '🥈 次熱' : i === 2 ? '🥉 三位' : `第${i+1}位`;
+        return `<div class="odds-row ${isFav ? 'fav' : ''}" style="animation-delay:${i*0.07}s">
+          <div class="odds-pos" style="color:${isFav ? 'var(--gold)' : 'var(--muted)'}">${i+1}</div>
+          <div>
+            <div class="odds-name">${o.name}</div>
+            <div style="font-size:9px;color:var(--muted);margin-top:2px">${rankLabel} · ${o.momentum}</div>
+          </div>
+          <div>
+            <div class="odds-decimal">${o.odds}x</div>
+            <div class="odds-prob">${o.winProb}%</div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);text-align:right">場均<br><span style="color:${o.avgGain >= 0 ? 'var(--green)' : 'var(--red)'};font-family:'Bebas Neue',cursive;font-size:16px">${o.avgGain >= 0 ? '+' : ''}${o.avgGain}</span></div>
+          <div class="odds-bars">
+            <div class="odds-bar-row"><span style="width:40px">歷史</span><div class="odds-bar-bg"><div class="odds-bar-fill" style="width:${o.baseWR}%;background:var(--jade)"></div></div><span>${o.baseWR}%</span></div>
+            <div class="odds-bar-row"><span style="width:40px">近5場</span><div class="odds-bar-bg"><div class="odds-bar-fill" style="width:${o.recentWR}%;background:var(--blue)"></div></div><span>${o.recentWR}%</span></div>
+            <div class="odds-bar-row"><span style="width:40px">${dayZh}</span><div class="odds-bar-bg"><div class="odds-bar-fill" style="width:${o.dowWR}%;background:var(--gold)"></div></div><span>${o.dowWR}%</span></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ── INPUT SCORES ──
+function renderInput() {
+  const el = document.getElementById('tab-input');
+  const allNames = [...new Set(APP.players.map(p => p.name))].sort();
+  el.innerHTML = `
+    <div class="sec-title">輸入新一場分數</div>
+    <div class="input-form">
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">日期</div>
+          <input type="date" class="form-input" id="inp-date" value="${new Date().toISOString().slice(0,10)}">
+        </div>
+        <div class="form-group">
+          <div class="form-label">備註（可選）</div>
+          <input type="text" class="form-input" id="inp-notes" placeholder="例：聖誕特備局">
+        </div>
+      </div>
+      <div class="form-label" style="margin-bottom:10px">參賽者分數（正數 = 贏，負數 = 輸，空白 = 未出席）</div>
+      <div class="score-grid">
+        ${allNames.map(n => `
+          <div class="score-item">
+            <div class="score-player">${n}</div>
+            <input type="number" class="score-input" id="score-${safeName(n)}" placeholder="分數" step="0.1" data-name="${n}">
+          </div>`).join('')}
+        <div class="score-item" id="new-player-item" style="grid-column:1/-1">
+          <input type="text" class="form-input" id="new-player-name" placeholder="新增玩家名稱（可選）" style="flex:1;margin-right:8px">
+          <input type="number" class="score-input" id="new-player-score" placeholder="分數" step="0.1" style="width:100px">
+        </div>
+      </div>
+      <div class="sum-display">合計：<span id="score-sum" class="gold">0</span></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn-primary" onclick="submitScores()">✅ 提交分數</button>
+        <button class="btn-secondary" onclick="clearScores()">清除</button>
+        <div id="submit-error" class="error-msg"></div>
+      </div>
+    </div>
+
+    <div class="sec-title" style="margin-top:28px">歷史場次記錄</div>
+    <div class="sessions-history" id="sessions-history"></div>`;
+
+  // Live sum
+  document.querySelectorAll('.score-input').forEach(inp => inp.addEventListener('input', updateSum));
+  renderSessionsHistory();
+}
+
+function updateSum() {
+  const vals = [...document.querySelectorAll('.score-input[data-name]')]
+    .map(i => parseFloat(i.value) || 0);
+  const newP = parseFloat(document.getElementById('new-player-score')?.value) || 0;
+  const total = vals.reduce((a, b) => a + b, 0) + newP;
+  const el = document.getElementById('score-sum');
+  if (el) { el.textContent = Math.round(total * 10) / 10; el.className = Math.abs(total) < 0.5 ? 'gold' : (total > 0 ? 'pos' : 'neg'); }
+}
+
+function clearScores() {
+  document.querySelectorAll('.score-input').forEach(i => i.value = '');
+  document.getElementById('new-player-name').value = '';
+  document.getElementById('new-player-score').value = '';
+  updateSum();
+}
+
+async function submitScores() {
+  const date = document.getElementById('inp-date').value;
+  const notes = document.getElementById('inp-notes').value;
+  const errEl = document.getElementById('submit-error');
+  if (!date) { errEl.textContent = '請選擇日期'; return; }
+
+  const results = {};
+  document.querySelectorAll('.score-input[data-name]').forEach(inp => {
+    const v = inp.value.trim();
+    if (v !== '') results[inp.dataset.name] = parseFloat(v);
+  });
+  const newName = document.getElementById('new-player-name').value.trim();
+  const newScore = document.getElementById('new-player-score').value.trim();
+  if (newName && newScore) results[newName] = parseFloat(newScore);
+
+  if (Object.keys(results).length < 2) { errEl.textContent = '至少需要2位參賽者'; return; }
+
+  const sum = Object.values(results).reduce((a, b) => a + b, 0);
+  if (Math.abs(sum) > 2) {
+    if (!confirm(`分數合計為 ${Math.round(sum*10)/10}，不等於0，確認提交？`)) return;
+  }
+
+  const res = await fetch('/api/sessions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ date, results, notes })
+  });
+  const data = await res.json();
+  if (data.success) {
+    showToast('✅ 分數已更新！正在重新整理...');
+    errEl.textContent = '';
+    clearScores();
+    await loadData();
+  } else {
+    errEl.textContent = '提交失敗: ' + data.error;
+  }
+}
+
+function renderSessionsHistory() {
+  const container = document.getElementById('sessions-history');
+  if (!container) return;
+  const sorted = [...APP.sessions].sort((a, b) => b.date.localeCompare(a.date));
+  container.innerHTML = sorted.slice(0, 20).map(s => {
+    const players = Object.entries(s.results)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, amt]) => `<span style="color:${amt > 0 ? 'var(--jade)' : 'var(--red)'}">${name}:${amt > 0 ? '+' : ''}${amt}</span>`)
+      .join(' · ');
+    return `<div class="sess-item">
+      <div>
+        <div class="sess-date">${s.date}</div>
+        <div class="sess-players" style="margin-top:3px;line-height:1.6">${players}</div>
+        ${s.notes ? `<div style="font-size:10px;color:var(--gold);margin-top:2px">${s.notes}</div>` : ''}
+      </div>
+      <button class="del-btn" onclick="deleteSession(${s.id})">刪除</button>
+    </div>`;
+  }).join('');
+}
+
+async function deleteSession(id) {
+  if (!confirm('確認刪除這場記錄？')) return;
+  await fetch('/api/sessions/' + id, { method: 'DELETE' });
+  showToast('已刪除');
+  await loadData();
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3000);
+}
+
+// ── INIT ──
+loadData();
+</script>
+</body>
+</html>
